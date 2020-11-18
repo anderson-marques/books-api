@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Books API
+
+Globals:
+  Function:
+    Runtime: nodejs12.x
+
+Parameters:
+  logLevel:
+    Type: String
+    Default: debug
+    AllowedValues:
+      - debug
+      - info
+      - error
+  stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+
+Resources:
+  BooksApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: { Ref: stage }
+
+  BooksTable:
+    Type: AWS::Serverless::SimpleTable
+
+  ListAllBooksFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Books api
+      Handler: build/list-books.handler
+      Timeout: 3
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: { Ref: BooksTable }
+      Environment:
+        Variables:
+          LOG_LEVEL: { "Fn::Sub" : "${logLevel}" }
+          BOOKS_TABLE: { Ref: BooksTable }
+      Events:
+        ListAllBooks:
+          Type: HttpApi
+          Properties:
+            ApiId: { Ref: BooksApi }
+            Method: GET
+            Path: "/books"
+
+  CreateBookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Books api
+      Handler: build/create-book.handler
+      Timeout: 3
+      Environment:
+        Variables:
+          LOG_LEVEL: { "Fn::Sub" : "${logLevel}" }
+          BOOKS_TABLE: { Ref: BooksTable }
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: { Ref: BooksTable }
+      Events:
+        ListAllBooks:
+          Type: HttpApi
+          Properties:
+            ApiId: { Ref: BooksApi }
+            Method: POST
+            Path: "/books"
+Outputs:
+  BooksApiUrl:
+    Description: URL of the Books API endpoint
+    Value:
+      Fn::Sub: 'https://${BooksApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${stage}/'
+
+
+Transform: AWS::Serverless-2016-10-31

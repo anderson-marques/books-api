@@ -1,0 +1,56 @@
+name: Prod Deploy
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  COMPANY: me.marques.anderson
+  DEPLOYMENT_BUCKET_NAME: lambda-artifacts
+  STAGE: prod
+  LOG_LEVEL: debug
+  APP_NAME: books-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:  ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm run test
+
+      - name: Build
+        run: |
+          rm -rf build
+          npm run build
+          sam validate
+          sam build
+
+      - name: Deploy
+        run: |
+          aws s3 ls s3://${COMPANY}.${STAGE}.${DEPLOYMENT_BUCKET_NAME} || aws s3 mb s3://${COMPANY}.${STAGE}.${DEPLOYMENT_BUCKET_NAME}
+          sam deploy --stack-name ${STAGE}-${APP_NAME} \
+							--s3-bucket ${COMPANY}.${STAGE}.${DEPLOYMENT_BUCKET_NAME} \
+							--s3-prefix ${APP_NAME} \
+							--no-confirm-changeset \
+							--capabilities CAPABILITY_NAMED_IAM \
+							--parameter-overrides ParameterKey=logLevel,ParameterValue=${LOG_LEVEL} ParameterKey=stage,ParameterValue=${STAGE}
