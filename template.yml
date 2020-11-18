@@ -30,8 +30,7 @@ Resources:
         AllowOrigins:
           - "*"
         AllowMethods:
-          - GET
-          - POST
+          - "*"
 
   BooksTable:
     Type: AWS::Serverless::SimpleTable
