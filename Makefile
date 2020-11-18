@@ -4,10 +4,13 @@ LOG_LEVEL=debug
 APP_NAME=books-api
 STAGE=dev
 
+install:
+	@npm ci
+
 test:
 	@npm run test
 
-build: test
+build:
 	@rm -rf build
 	@npm run build
 	@sam validate
