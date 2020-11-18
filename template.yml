@@ -26,6 +26,9 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: { Ref: stage }
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
 
   BooksTable:
     Type: AWS::Serverless::SimpleTable
