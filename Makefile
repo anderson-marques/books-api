@@ -27,7 +27,7 @@ deploy: build
 							--s3-prefix ${APP_NAME} \
 							--confirm-changeset \
 							--capabilities CAPABILITY_NAMED_IAM \
-							--parameter-overrides ParameterKey=logLevel,ParameterValue=${LOG_LEVEL} ParameterKey=stage,ParameterValue=${STAGE}
+							--parameter-overrides ParameterKey=logLevel,ParameterValue=${LOG_LEVEL} ParameterKey=stage,ParameterValue=${STAGE} ParameterKey=company,ParameterValue=${COMPANY}
 
 destroy:
 	@aws cloudformation delete-stack --stack-name ${STAGE}-${APP_NAME}
