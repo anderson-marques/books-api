@@ -28,7 +28,7 @@ Resources:
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Fn::Sub "${company}.books"
+      BucketName: !Sub "${company}.books"
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
@@ -114,7 +114,7 @@ Outputs:
 
   BooksApiUrl:
     Description: URL of the Books API endpoint
-    Value: !Fn::Sub "https://${BooksApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${stage}/"
+    Value: !Sub "https://${BooksApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${stage}/"
 
 
 Transform: AWS::Serverless-2016-10-31
