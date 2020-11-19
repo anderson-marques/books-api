@@ -1,3 +1,4 @@
+import { InvalidBookError } from '../books/invalid-book-error';
 import { HttpResponseEvent, HttpStatusCode } from './http-response-event';
 
 export type ProblemDetail = {
@@ -13,11 +14,19 @@ export const errorMapper: (
 ) => HttpResponseEvent = (error: Error) => {
   let problemDetail: ProblemDetail;
 
-  problemDetail = {
-    status: HttpStatusCode.SERVER_ERROR,
-    type: 'books-api/server-error',
-    title: 'A Server Error Happened!',
-  };
+  if (error instanceof InvalidBookError) {
+    problemDetail = {
+      status: HttpStatusCode.BAD_REQUEST,
+      type: 'books-api/bad-request',
+      title: 'The book is invalid!',
+    };
+  } else {
+    problemDetail = {
+      status: HttpStatusCode.SERVER_ERROR,
+      type: 'books-api/server-error',
+      title: 'A Server Error Happened!',
+    };
+  }
 
   return {
     statusCode: problemDetail.status,

@@ -1,7 +1,18 @@
 import { Logger } from 'winston';
+import { URL } from 'url';
+import { InvalidBookError } from './invalid-book-error';
 import { HttpRequestEvent } from '../http/http-request-event';
 import { HttpResponseEvent, HttpStatusCode } from '../http/http-response-event';
 import { successMapper } from '../http/http-mappers';
+
+const isValidImage = (value: string): boolean => {
+  try {
+    new URL(value);
+    return  value.endsWith('jpg') || value.endsWith('jpeg'), value.endsWith('png');
+  } catch (TypeError) {
+    return false;
+  }
+}
 
 export class BooksController {
   private logger: Logger;
@@ -59,6 +70,10 @@ export class BooksController {
     );
 
     const { title, authors, image } = JSON.parse(request.body);
+
+    if (!title || !authors || !isValidImage(image)) {
+      throw new InvalidBookError('The book is invalid')
+    }
 
     const bookItem = {
       id: `${title} by ${authors}`,
