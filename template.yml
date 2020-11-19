@@ -6,6 +6,9 @@ Globals:
     Runtime: nodejs12.x
 
 Parameters:
+  company:
+    Type: String
+
   logLevel:
     Type: String
     Default: debug
@@ -22,10 +25,36 @@ Parameters:
       - prod
 
 Resources:
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Fn::Sub "${company}.books"
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: MyPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref WebsiteBucket
+                - /*
+      Bucket: !Ref WebsiteBucket
+
   BooksApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: { Ref: stage }
+      StageName: !Ref stage
       CorsConfiguration:
         AllowOrigins:
           - "*"
@@ -43,16 +72,16 @@ Resources:
       Timeout: 3
       Policies:
         - DynamoDBReadPolicy:
-            TableName: { Ref: BooksTable }
+            TableName: !Ref BooksTable
       Environment:
         Variables:
-          LOG_LEVEL: { "Fn::Sub" : "${logLevel}" }
-          BOOKS_TABLE: { Ref: BooksTable }
+          LOG_LEVEL: !Ref logLevel
+          BOOKS_TABLE: !Ref BooksTable
       Events:
         ListAllBooks:
           Type: HttpApi
           Properties:
-            ApiId: { Ref: BooksApi }
+            ApiId: !Ref BooksApi
             Method: GET
             Path: "/books"
 
@@ -64,19 +93,25 @@ Resources:
       Timeout: 3
       Environment:
         Variables:
-          LOG_LEVEL: { "Fn::Sub" : "${logLevel}" }
-          BOOKS_TABLE: { Ref: BooksTable }
+          LOG_LEVEL: !Ref logLevel
+          BOOKS_TABLE: !Ref BooksTable
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: { Ref: BooksTable }
+            TableName: !Ref BooksTable
       Events:
         ListAllBooks:
           Type: HttpApi
           Properties:
-            ApiId: { Ref: BooksApi }
+            ApiId: !Ref BooksApi
             Method: POST
             Path: "/books"
 Outputs:
+  WebsiteBucket:
+    Value: !GetAtt
+      - S3Bucket
+      - WebsiteURL
+    Description: URL for website hosted on S3
+
   BooksApiUrl:
     Description: URL of the Books API endpoint
     Value:

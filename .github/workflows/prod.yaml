@@ -57,3 +57,4 @@ jobs:
           --parameter-overrides
           ParameterKey=logLevel,ParameterValue=${LOG_LEVEL}
           ParameterKey=stage,ParameterValue=${STAGE}
+          ParameterKey=company,ParameterValue=${COMPANY}
