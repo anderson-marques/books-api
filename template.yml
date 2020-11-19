@@ -55,7 +55,7 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref stage
-      CorsConfiguration:
+      HttpApiCorsConfiguration:
         AllowOrigins:
           - "*"
         AllowMethods:
