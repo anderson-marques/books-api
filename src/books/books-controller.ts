@@ -1,14 +1,15 @@
 import { Logger } from 'winston';
-import { URL } from 'url';
+import { URL } from 'url';
 import { InvalidBookError } from './invalid-book-error';
 import { HttpRequestEvent } from '../http/http-request-event';
 import { HttpResponseEvent, HttpStatusCode } from '../http/http-response-event';
 import { successMapper } from '../http/http-mappers';
+import AWS from 'aws-sdk'
 
 const isValidImage = (value: string): boolean => {
   try {
     new URL(value);
-    return  value.endsWith('jpg') || value.endsWith('jpeg'), value.endsWith('png');
+    return  value.endsWith('.jpg') || value.endsWith('.jpeg') || value.endsWith('.png');
   } catch (TypeError) {
     return false;
   }
